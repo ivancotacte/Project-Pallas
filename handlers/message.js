@@ -6,7 +6,6 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
   currentUserInfo = currentUserInfo[cID];
   let aiPrefix = currentUserInfo.firstName.split(" ");
   const { name, prefix } = config;
-  //Prefix based commands
   if (input.startsWith(`${prefix}`)) {
     let cmd = input.substring(1);
     cmd = cmd.split(" ");
@@ -38,7 +37,6 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
         });
       }
     } catch (err) {
-      //If the file not foundor something error.
       if (err.code == "MODULE_NOT_FOUND") {
         api.sendMessage(
           `Command '${cmd[0]}' isn't found on command list.`,
@@ -56,7 +54,6 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
       let runIt = require(`../commands/noprefix/${cmd[0]}`);
       runIt({ api, event, config, userInfo });
     } catch (err) {
-      //console.log(err)
       return;
     }
   }

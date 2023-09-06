@@ -28,7 +28,6 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
         });
       }
     } catch (err) {
-      //If the file not foundor something error.
       if (err.code == "MODULE_NOT_FOUND") {
         api.sendMessage(
           `Command '${cmd[0]}' isn't found on command list.`,
