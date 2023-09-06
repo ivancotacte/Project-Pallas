@@ -6,25 +6,17 @@ module.exports.runFunction = async ({ api, event }) => {
     const { data } = await axios.get(
       "https://shoti-api.libyzxy0.repl.co/api/get-shoti?apikey=shoti-1h784d7d7ai8gc3g21o",
     );
-    const file = fs.createWriteStream(__dirname + "/../cache/cache/shoti.mp4");
+    const file = fs.createWriteStream(__dirname + "/../cache/shoti.mp4");
     const rqs = request(encodeURI(data.data.url));
     rqs.pipe(file);
     file.on("finish", () => {
       api.sendMessage(
         {
-          body:
-            "Username:" +
-            data.user.username +
-            "Nickaname:" +
-            data.user.nickname +
-            "ID:" +
-            data.user.id,
-          attachment: fs.createReadStream(
-            __dirname + "/../cache/cache/shoti.mp4",
-          ),
+          body: `Username: ${data.user.username}\nNickname: ${data.user.nickname}\nID: ${data.user.id}`,
+          attachment: fs.createReadStream(__dirname + "/../cache/shoti.mp4"),
         },
         event.threadID,
-        event.messageID,
+        event.messageID
       );
     });
   } catch (error) {
