@@ -1,10 +1,11 @@
 {
   "name": "project-pallas",
   "version": "1.0.0",
-  "description": "",
+  "description": "I'm OrionAI a Chatbot Artificial Intelligence",
   "main": "index.js",
   "scripts": {
     "start": "node index",
+    "prettier": "prettier ./ --write",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +15,10 @@
     "url": "https://github.com/ivancotacte/Project-Pallas"
   },
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ivancotacte/Project-Pallas/issues",
+    "email": "cotactearmenion@gmail.com"
+  },
   "dependencies": {
     "amethyste-api": "^1.1.6",
     "bluebird": "^2.11.0",

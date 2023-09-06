@@ -1,16 +1,18 @@
 const fs = require("fs");
 const login = require("./login");
 const path = require("path");
+const config = require("./config");
+let globalData = {};
 
 const proxy = {
   protocol: "https",
-  host: "103.69.108.78",
+  host: "158.62.27.226",
   port: 8191,
   type: "https",
   anonymityLevel: "elite",
   country: "PH",
-  city: "Taguig",
-  hostname: "103.69.108.78 (CITI Cableworld Inc.)",
+  city: "Pasig",
+  hostname: "158.62.27.226",
 };
 
 const local = {
@@ -42,6 +44,22 @@ login({ appState: credentials, proxy: proxy, local: local }, (err, api) => {
     userInfo = userInfo[event.senderID];
 
     if (event.type == "message") {
+      require("./handlers/adminHandler")({ api, event });
+      require("./handlers/message")({
+        api,
+        event,
+        config,
+        userInfo,
+        globalData,
+      });
+    } else if (event.type == "message_reply") {
+      require("./handlers/message_reply")({
+        api,
+        event,
+        config,
+        userInfo,
+        globalData,
+      });
     } else if (event.type == "event") {
       require("./handlers/eventHandler")({ api, event });
     }
