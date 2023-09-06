@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +15,16 @@
   },
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^2.11.0"
+    "amethyste-api": "^1.1.6",
+    "bluebird": "^2.11.0",
+    "cheerio": "^0.22.0",
+    "https-proxy-agent": "^7.0.2",
+    "mqtt": "^4.3.7",
+    "npmlog": "^7.0.1",
+    "request": "^2.53.0",
+    "websocket-stream": "^5.5.0"
+  },
+  "devDependencies": {
+    "prettier": "3.0.3"
   }
 }

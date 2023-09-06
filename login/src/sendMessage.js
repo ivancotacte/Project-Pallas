@@ -26,13 +26,13 @@ module.exports = function (defaultFuncs, api, ctx) {
           error:
             "Attachment should be a readable stream and not " +
             utils.getType(attachments[i]) +
-            "."
+            ".",
         };
       }
 
       var form = {
         upload_1024: attachments[i],
-        voice_clip: "true"
+        voice_clip: "true",
       };
 
       uploads.push(
@@ -41,7 +41,7 @@ module.exports = function (defaultFuncs, api, ctx) {
             "https://upload.facebook.com/ajax/mercury/upload.php",
             ctx.jar,
             form,
-            {}
+            {},
           )
           .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
           .then(function (resData) {
@@ -52,7 +52,7 @@ module.exports = function (defaultFuncs, api, ctx) {
             // We have to return the data unformatted unless we want to change it
             // back in sendMessage.
             return resData.payload.metadata[0];
-          })
+          }),
       );
     }
 
@@ -72,14 +72,14 @@ module.exports = function (defaultFuncs, api, ctx) {
     var form = {
       image_height: 960,
       image_width: 960,
-      uri: url
+      uri: url,
     };
 
     defaultFuncs
       .post(
         "https://www.facebook.com/message_share_attachment/fromURI/",
         ctx.jar,
-        form
+        form,
       )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
@@ -149,7 +149,7 @@ module.exports = function (defaultFuncs, api, ctx) {
             log.warn(
               "sendMessage",
               "Got error 1545012. This might mean that you're not part of the conversation " +
-              threadID
+                threadID,
             );
           }
           return callback(resData);
@@ -160,7 +160,7 @@ module.exports = function (defaultFuncs, api, ctx) {
             {
               threadID: v.thread_fbid,
               messageID: v.message_id,
-              timestamp: v.timestamp
+              timestamp: v.timestamp,
             } || p
           );
         }, null);
@@ -193,7 +193,7 @@ module.exports = function (defaultFuncs, api, ctx) {
             threadID,
             Object.keys(res).length > 0,
             messageAndOTID,
-            callback
+            callback,
           );
         });
       } else {
@@ -221,11 +221,15 @@ module.exports = function (defaultFuncs, api, ctx) {
   function handleLocation(msg, form, callback, cb) {
     if (msg.location) {
       if (msg.location.latitude == null || msg.location.longitude == null) {
-        return callback({ error: "location property needs both latitude and longitude" });
+        return callback({
+          error: "location property needs both latitude and longitude",
+        });
       }
 
-      form["location_attachment[coordinates][latitude]"] = msg.location.latitude;
-      form["location_attachment[coordinates][longitude]"] = msg.location.longitude;
+      form["location_attachment[coordinates][latitude]"] =
+        msg.location.latitude;
+      form["location_attachment[coordinates][longitude]"] =
+        msg.location.longitude;
       form["location_attachment[is_current_location]"] = !!msg.location.current;
     }
 
@@ -307,7 +311,7 @@ module.exports = function (defaultFuncs, api, ctx) {
         if (offset < 0) {
           log.warn(
             "handleMention",
-            'Mention for "' + tag + '" not found in message string.'
+            'Mention for "' + tag + '" not found in message string.',
           );
         }
 
@@ -325,8 +329,14 @@ module.exports = function (defaultFuncs, api, ctx) {
     cb();
   }
 
-  return function sendMessage(msg, threadID, callback, replyToMessage, isGroup) {
-    typeof isGroup == "undefined" ? isGroup = null : "";
+  return function sendMessage(
+    msg,
+    threadID,
+    callback,
+    replyToMessage,
+    isGroup,
+  ) {
+    typeof isGroup == "undefined" ? (isGroup = null) : "";
     if (
       !callback &&
       (utils.getType(threadID) === "Function" ||
@@ -334,16 +344,13 @@ module.exports = function (defaultFuncs, api, ctx) {
     ) {
       return threadID({ error: "Pass a threadID as a second argument." });
     }
-    if (
-      !replyToMessage &&
-      utils.getType(callback) === "String"
-    ) {
+    if (!replyToMessage && utils.getType(callback) === "String") {
       replyToMessage = callback;
-      callback = function () { };
+      callback = function () {};
     }
 
-    var resolveFunc = function(){};
-    var rejectFunc = function(){};
+    var resolveFunc = function () {};
+    var rejectFunc = function () {};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -365,7 +372,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     if (msgType !== "String" && msgType !== "Object") {
       return callback({
         error:
-          "Message should be of type string or object and not " + msgType + "."
+          "Message should be of type string or object and not " + msgType + ".",
       });
     }
 
@@ -379,16 +386,14 @@ module.exports = function (defaultFuncs, api, ctx) {
         error:
           "ThreadID should be of type number, string, or array and not " +
           threadIDType +
-          "."
+          ".",
       });
     }
 
-    if (replyToMessage && messageIDType !== 'String') {
+    if (replyToMessage && messageIDType !== "String") {
       return callback({
         error:
-          "MessageID should be of type string and not " +
-          threadIDType +
-          "."
+          "MessageID should be of type string and not " + threadIDType + ".",
       });
     }
 
@@ -397,11 +402,11 @@ module.exports = function (defaultFuncs, api, ctx) {
     }
 
     var disallowedProperties = Object.keys(msg).filter(
-      prop => !allowedProperties[prop]
+      (prop) => !allowedProperties[prop],
     );
     if (disallowedProperties.length > 0) {
       return callback({
-        error: "Dissallowed props: `" + disallowedProperties.join(", ") + "`"
+        error: "Dissallowed props: `" + disallowedProperties.join(", ") + "`",
       });
     }
 
@@ -437,7 +442,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       manual_retry_cnt: "0",
       has_attachment: !!(msg.attachment || msg.url || msg.sticker),
       signatureID: utils.getSignatureID(),
-      replied_to_message_id: replyToMessage
+      replied_to_message_id: replyToMessage,
     };
 
     handleLocation(msg, form, callback, () =>
@@ -446,12 +451,12 @@ module.exports = function (defaultFuncs, api, ctx) {
           handleUrl(msg, form, callback, () =>
             handleEmoji(msg, form, callback, () =>
               handleMention(msg, form, callback, () =>
-                send(form, threadID, messageAndOTID, callback, isGroup)
-              )
-            )
-          )
-        )
-      )
+                send(form, threadID, messageAndOTID, callback, isGroup),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
 
     return returnPromise;

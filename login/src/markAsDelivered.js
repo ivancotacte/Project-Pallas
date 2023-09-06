@@ -5,8 +5,8 @@ var log = require("npmlog");
 
 module.exports = function (defaultFuncs, api, ctx) {
   return function markAsDelivered(threadID, messageID, callback) {
-    var resolveFunc = function(){};
-    var rejectFunc = function(){};
+    var resolveFunc = function () {};
+    var rejectFunc = function () {};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -34,7 +34,7 @@ module.exports = function (defaultFuncs, api, ctx) {
       .post(
         "https://www.facebook.com/ajax/mercury/delivery_receipts.php",
         ctx.jar,
-        form
+        form,
       )
       .then(utils.saveCookies(ctx.jar))
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))

@@ -2,10 +2,10 @@
 
 var utils = require("../utils");
 
-module.exports = function(defaultFuncs, api, ctx) {
+module.exports = function (defaultFuncs, api, ctx) {
   return function searchForThread(name, callback) {
-    var resolveFunc = function(){};
-    var rejectFunc = function(){};
+    var resolveFunc = function () {};
+    var rejectFunc = function () {};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -25,17 +25,17 @@ module.exports = function(defaultFuncs, api, ctx) {
       query: name,
       offset: 0,
       limit: 21,
-      index: "fbid"
+      index: "fbid",
     };
 
     defaultFuncs
       .post(
         "https://www.facebook.com/ajax/mercury/search_threads.php",
         ctx.jar,
-        tmpForm
+        tmpForm,
       )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function(resData) {
+      .then(function (resData) {
         if (resData.error) {
           throw resData;
         }
@@ -44,7 +44,7 @@ module.exports = function(defaultFuncs, api, ctx) {
         }
         return callback(
           null,
-          resData.payload.mercury_payload.threads.map(utils.formatThread)
+          resData.payload.mercury_payload.threads.map(utils.formatThread),
         );
       });
 

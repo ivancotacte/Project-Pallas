@@ -21,21 +21,21 @@ function formatEventReminders(reminder) {
     secondsToNotifyBefore: reminder.seconds_to_notify_before,
     allowsRsvp: reminder.allows_rsvp,
     relatedEvent: reminder.related_event,
-    members: reminder.event_reminder_members.edges.map(function(member) {
+    members: reminder.event_reminder_members.edges.map(function (member) {
       return {
         memberID: member.node.id,
-        state: member.guest_list_state.toLowerCase()
+        state: member.guest_list_state.toLowerCase(),
       };
-    })
+    }),
   };
 }
 
 function formatThreadGraphQLResponse(data) {
-  try{
+  try {
     var messageThread = data.o0.data.message_thread;
-  } catch (err){
+  } catch (err) {
     console.error("GetThreadInfoGraphQL", "Can't get this thread info!");
-    return {err: err};
+    return { err: err };
   }
   var threadID = messageThread.thread_key.thread_fbid
     ? messageThread.thread_key.thread_fbid
@@ -62,8 +62,10 @@ function formatThreadGraphQLResponse(data) {
   return {
     threadID: threadID,
     threadName: messageThread.name,
-    participantIDs: messageThread.all_participants.edges.map(d => d.node.messaging_actor.id),
-    userInfo: messageThread.all_participants.edges.map(d => ({
+    participantIDs: messageThread.all_participants.edges.map(
+      (d) => d.node.messaging_actor.id,
+    ),
+    userInfo: messageThread.all_participants.edges.map((d) => ({
       id: d.node.messaging_actor.id,
       name: d.node.messaging_actor.name,
       firstName: d.node.messaging_actor.short_name,
@@ -73,7 +75,7 @@ function formatThreadGraphQLResponse(data) {
       gender: d.node.messaging_actor.gender,
       type: d.node.messaging_actor.__typename,
       isFriend: d.node.messaging_actor.is_viewer_friend,
-      isBirthday: !!d.node.messaging_actor.is_birthday //not sure?
+      isBirthday: !!d.node.messaging_actor.is_birthday, //not sure?
     })),
     unreadCount: messageThread.unread_count,
     messageCount: messageThread.messages_count,
@@ -99,20 +101,20 @@ function formatThreadGraphQLResponse(data) {
       messageThread.customization_info &&
       messageThread.customization_info.participant_customizations
         ? messageThread.customization_info.participant_customizations.reduce(
-            function(res, val) {
+            function (res, val) {
               if (val.nickname) res[val.participant_id] = val.nickname;
               return res;
             },
-            {}
+            {},
           )
         : {},
     adminIDs: messageThread.thread_admins,
     approvalMode: Boolean(messageThread.approval_mode),
-    approvalQueue: messageThread.group_approval_queue.nodes.map(a => ({
+    approvalQueue: messageThread.group_approval_queue.nodes.map((a) => ({
       inviterID: a.inviter.id,
       requesterID: a.requester.id,
       timestamp: a.request_timestamp,
-      request_source: a.request_source // @Undocumented
+      request_source: a.request_source, // @Undocumented
     })),
 
     // @Undocumented
@@ -139,20 +141,23 @@ function formatThreadGraphQLResponse(data) {
       : null,
     lastMessageType: "message",
     lastReadTimestamp: lastReadTimestamp,
-    threadType: messageThread.thread_type == "GROUP" ? 2 : 1
+    threadType: messageThread.thread_type == "GROUP" ? 2 : 1,
   };
 }
 
-module.exports = function(defaultFuncs, api, ctx) {
+module.exports = function (defaultFuncs, api, ctx) {
   return function getThreadInfoGraphQL(threadID, callback) {
-    var resolveFunc = function(){};
-    var rejectFunc = function(){};
+    var resolveFunc = function () {};
+    var rejectFunc = function () {};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
     });
 
-    if (utils.getType(callback) != "Function" && utils.getType(callback) != "AsyncFunction") {
+    if (
+      utils.getType(callback) != "Function" &&
+      utils.getType(callback) != "AsyncFunction"
+    ) {
       callback = function (err, data) {
         if (err) {
           return rejectFunc(err);
@@ -173,17 +178,17 @@ module.exports = function(defaultFuncs, api, ctx) {
             message_limit: 0,
             load_messages: false,
             load_read_receipts: false,
-            before: null
-          }
-        }
+            before: null,
+          },
+        },
       }),
-      batch_name: "MessengerGraphQLThreadFetcher"
+      batch_name: "MessengerGraphQLThreadFetcher",
     };
 
     defaultFuncs
       .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function(resData) {
+      .then(function (resData) {
         if (resData.error) {
           throw resData;
         }
@@ -196,7 +201,7 @@ module.exports = function(defaultFuncs, api, ctx) {
 
         callback(null, formatThreadGraphQLResponse(resData[0]));
       })
-      .catch(function(err) {
+      .catch(function (err) {
         log.error("getThreadInfoGraphQL", err);
         return callback(err);
       });

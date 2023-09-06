@@ -3,16 +3,16 @@
 var utils = require("../utils");
 var log = require("npmlog");
 
-module.exports = function(defaultFuncs, api, ctx) {
+module.exports = function (defaultFuncs, api, ctx) {
   return function deleteMessage(messageOrMessages, callback) {
-    var resolveFunc = function(){};
-    var rejectFunc = function(){};
+    var resolveFunc = function () {};
+    var rejectFunc = function () {};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
     });
     if (!callback) {
-      callback = function(err) {
+      callback = function (err) {
         if (err) {
           return rejectFunc(err);
         }
@@ -21,7 +21,7 @@ module.exports = function(defaultFuncs, api, ctx) {
     }
 
     var form = {
-      client: "mercury"
+      client: "mercury",
     };
 
     if (utils.getType(messageOrMessages) !== "Array") {
@@ -36,17 +36,17 @@ module.exports = function(defaultFuncs, api, ctx) {
       .post(
         "https://www.facebook.com/ajax/mercury/delete_messages.php",
         ctx.jar,
-        form
+        form,
       )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function(resData) {
+      .then(function (resData) {
         if (resData.error) {
           throw resData;
         }
 
         return callback();
       })
-      .catch(function(err) {
+      .catch(function (err) {
         log.error("deleteMessage", err);
         return callback(err);
       });

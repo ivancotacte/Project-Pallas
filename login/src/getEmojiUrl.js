@@ -2,7 +2,7 @@
 
 const util = require("util");
 
-module.exports = function() {
+module.exports = function () {
   return function getEmojiUrl(c, size, pixelRatio) {
     /*
      Resolves Facebook Messenger emoji image asset URL for an emoji character.
@@ -16,7 +16,7 @@ module.exports = function() {
       "%s/%s/%s.png",
       pixelRatio,
       size,
-      c.codePointAt(0).toString(16)
+      c.codePointAt(0).toString(16),
     );
     let base = 317426846;
     for (let i = 0; i < ending.length; i++) {

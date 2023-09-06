@@ -35,7 +35,15 @@ login({ appState: credentials, proxy: proxy, local: local }, (err, api) => {
     online: true,
   });
 
-  api.listenMqtt((err, event) => {
+  api.listenMqtt(async (err, event) => {
     if (err) return console.error(err);
+
+    let userInfo = await api.getUserInfo(event.senderID);
+    userInfo = userInfo[event.senderID];
+
+    if (event.type == "message") {
+    } else if (event.type == "event") {
+      require("./handlers/eventHandler")({ api, event });
+    }
   });
 });
