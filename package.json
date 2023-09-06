@@ -7,6 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Ivan Cotacte",
+    "email": "cotactearmenion@gmail.com",
+    "url": "https://github.com/ivancotacte/Project-Pallas"
+  },
   "license": "ISC"
 }
