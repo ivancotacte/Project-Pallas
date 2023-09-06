@@ -12,5 +12,8 @@
     "email": "cotactearmenion@gmail.com",
     "url": "https://github.com/ivancotacte/Project-Pallas"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.11.0"
+  }
 }
