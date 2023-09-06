@@ -9,23 +9,20 @@ module.exports = function (defaultFuncs, api, ctx) {
       !callback &&
       (utils.getType(threadID) === "Function" ||
         utils.getType(threadID) === "AsyncFunction")
-    ) {
-      throw { error: "please pass a threadID as a second argument." };
-    }
+    ) throw { error: "please pass a threadID as a second argument." };
 
-    var resolveFunc = function () {};
-    var rejectFunc = function () {};
+
+    var resolveFunc = function () { };
+    var rejectFunc = function () { };
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
     });
 
     if (!callback) {
-      callback = function (err, friendList) {
-        if (err) {
-          return rejectFunc(err);
-        }
-        resolveFunc(friendList);
+      callback = function (err, data) {
+        if (err) return rejectFunc(err);
+        resolveFunc(data);
       };
     }
 
@@ -55,29 +52,16 @@ module.exports = function (defaultFuncs, api, ctx) {
       thread_fbid: threadID,
       thread_name: newTitle,
       thread_id: threadID,
-      log_message_type: "log:thread-name",
+      log_message_type: "log:thread-name"
     };
 
     defaultFuncs
-      .post(
-        "https://www.facebook.com/messaging/set_thread_name/",
-        ctx.jar,
-        form,
-      )
+      .post("https://www.facebook.com/messaging/set_thread_name/", ctx.jar, form)
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
-        if (resData.error && resData.error === 1545012) {
-          throw { error: "Cannot change chat title: Not member of chat." };
-        }
-
-        if (resData.error && resData.error === 1545003) {
-          throw { error: "Cannot set title of single-user chat." };
-        }
-
-        if (resData.error) {
-          throw resData;
-        }
-
+        if (resData.error && resData.error === 1545012) throw { error: "Cannot change chat title: Not member of chat." };
+        if (resData.error && resData.error === 1545003) throw { error: "Cannot set title of single-user chat." };
+        if (resData.error) throw resData;
         return callback();
       })
       .catch(function (err) {

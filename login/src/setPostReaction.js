@@ -4,20 +4,18 @@ var utils = require("../utils");
 var log = require("npmlog");
 
 module.exports = function (defaultFuncs, api, ctx) {
-  return function unsendMessage(postID, type, callback) {
-    var resolveFunc = function () {};
-    var rejectFunc = function () {};
+  return function postReaction(postID, type, callback) {
+    var resolveFunc = function () { };
+    var rejectFunc = function () { };
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
     });
 
     if (!callback) {
-      callback = function (err, friendList) {
-        if (err) {
-          return rejectFunc(err);
-        }
-        resolveFunc(friendList);
+      callback = function (err, data) {
+        if (err) return rejectFunc(err);
+        resolveFunc(data);
       };
     }
 
@@ -27,13 +25,11 @@ module.exports = function (defaultFuncs, api, ctx) {
       wow: 3,
       haha: 4,
       sad: 7,
-      angry: 8,
+      angry: 8
     };
     if (typeof type != "number") {
       type = map[type.toLocaleLowerCase()];
-      if (!type) {
-        type = 1;
-      }
+      if (!type) type = 1;
     }
     var form = {
       av: ctx.userID,
@@ -45,20 +41,17 @@ module.exports = function (defaultFuncs, api, ctx) {
         input: {
           client_mutation_id: "7",
           actor_id: ctx.userID,
-          feedback_reaction: type,
+          feedback_reaction: type
         },
-        useDefaultActor: true,
-      }),
+        useDefaultActor: true
+      })
     };
 
     defaultFuncs
       .post("https://www.facebook.com/api/graphql/", ctx.jar, form)
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
-        if (resData.error) {
-          throw resData;
-        }
-
+        if (resData.error) throw resData;
         return callback();
       })
       .catch(function (err) {

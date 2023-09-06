@@ -5,8 +5,8 @@ var log = require("npmlog");
 
 module.exports = function (defaultFuncs, api, ctx) {
   return function changeThreadColor(color, threadID, callback) {
-    var resolveFunc = function () {};
-    var rejectFunc = function () {};
+    var resolveFunc = function () { };
+    var rejectFunc = function () { };
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -14,9 +14,7 @@ module.exports = function (defaultFuncs, api, ctx) {
 
     if (!callback) {
       callback = function (err) {
-        if (err) {
-          return rejectFunc(err);
-        }
+        if (err) return rejectFunc(err);
         resolveFunc(err);
       };
     }
@@ -25,12 +23,7 @@ module.exports = function (defaultFuncs, api, ctx) {
     var colorList = Object.keys(api.threadColors).map(function (name) {
       return api.threadColors[name];
     });
-    if (!colorList.includes(validatedColor)) {
-      throw {
-        error:
-          "The color you are trying to use is not a valid thread color. Use api.threadColors to find acceptable values.",
-      };
-    }
+    if (!colorList.includes(validatedColor)) throw { error: "The color you are trying to use is not a valid thread color. Use api.threadColors to find acceptable values." };
 
     var form = {
       dpr: 1,
@@ -44,20 +37,18 @@ module.exports = function (defaultFuncs, api, ctx) {
               client_mutation_id: "0",
               source: "SETTINGS",
               theme_id: validatedColor,
-              thread_id: threadID,
-            },
-          },
-        },
-      }),
+              thread_id: threadID
+            }
+          }
+        }
+      })
     };
 
     defaultFuncs
       .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
-        if (resData[resData.length - 1].error_results > 0) {
-          throw resData[0].o0.errors;
-        }
+        if (resData[resData.length - 1].error_results > 0) throw resData[0].o0.errors;
 
         return callback();
       })

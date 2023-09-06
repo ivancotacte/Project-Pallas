@@ -3,36 +3,20 @@
 module.exports = function (_defaultFuncs, _api, _ctx) {
   // Currently the only colors that can be passed to api.changeThreadColor(); may change if Facebook adds more
   return {
-    //Old hex colors.
-    ////MessengerBlue: null,
-    ////Viking: "#44bec7",
-    ////GoldenPoppy: "#ffc300",
-    ////RadicalRed: "#fa3c4c",
-    ////Shocking: "#d696bb",
-    ////PictonBlue: "#6699cc",
-    ////FreeSpeechGreen: "#13cf13",
-    ////Pumpkin: "#ff7e29",
-    ////LightCoral: "#e68585",
-    ////MediumSlateBlue: "#7646ff",
-    ////DeepSkyBlue: "#20cef5",
-    ////Fern: "#67b868",
-    ////Cameo: "#d4a88c",
-    ////BrilliantRose: "#ff5ca1",
-    ////BilobaFlower: "#a695c7"
 
     //#region This part is for backward compatibly
     //trying to match the color one-by-one. kill me plz
-    MessengerBlue: "196241301102133", //DefaultBlue
+    MessengerBlue: "196241301102133",  //DefaultBlue
     Viking: "1928399724138152", //TealBlue
-    GoldenPoppy: "174636906462322", //Yellow
+    GoldenPoppy: "174636906462322",  //Yellow
     RadicalRed: "2129984390566328", //Red
     Shocking: "2058653964378557", //LavenderPurple
     FreeSpeechGreen: "2136751179887052", //Green
-    Pumpkin: "175615189761153", //Orange
-    LightCoral: "980963458735625", //CoralPink
-    MediumSlateBlue: "234137870477637", //BrightPurple
+    Pumpkin: "175615189761153",  //Orange
+    LightCoral: "980963458735625",  //CoralPink
+    MediumSlateBlue: "234137870477637",  //BrightPurple
     DeepSkyBlue: "2442142322678320", //AquaBlue
-    BrilliantRose: "169463077092846", //HotPink
+    BrilliantRose: "169463077092846",  //HotPink
     //i've tried my best, everything else can't be mapped. (or is it?) -UIRI 2020
     //#endregion
 
