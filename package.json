@@ -21,12 +21,14 @@
   },
   "dependencies": {
     "amethyste-api": "^1.1.6",
+    "axios": "^1.5.0",
     "bluebird": "^2.11.0",
     "cheerio": "^0.22.0",
     "https-proxy-agent": "^7.0.2",
+    "moment-timezone": "^0.5.43",
     "mqtt": "^4.3.7",
     "npmlog": "^7.0.1",
-    "request": "^2.53.0",
+    "request": "^2.88.2",
     "websocket-stream": "^5.5.0"
   },
   "devDependencies": {

@@ -512,72 +512,30 @@ function _formatAttachment(attachment1, attachment2) {
         isVoiceMail: blob.is_voicemail
       };
     case "StickerAttachment":
-      try {
-        var ID = blob.id,
-          url = blob.url,
-
-          packID = blob.pack.id,
-          spriteUrl = blob.sprite_image,
-          spriteUrl2x = blob.sprite_image_2x,
-          width = blob.width,
-          height = blob.height,
-
-          caption = blob.label,
-          description = blob.label,
-
-          frameCount = blob.frame_count,
-          frameRate = blob.frame_rate,
-          framesPerRow = blob.frames_per_row,
-          framesPerCol = blob.frames_per_column,
-
-          stickerID = blob.id, // @Legacy
-          spriteURI = blob.sprite_image, // @Legacy
-          spriteURI2x = blob.sprite_image_2x // @Legacy
-      }
-      catch {
-        var ID = null,
-          url = null,
-
-          packID = null,
-          spriteUrl = null,
-          spriteUrl2x = null,
-          width = null,
-          height = null,
-
-          caption = null,
-          description = null,
-
-          frameCount = null,
-          frameRate = null,
-          framesPerRow = null,
-          framesPerCol = null,
-
-          stickerID = null, // @Legacy
-          spriteURI = null, // @Legacy
-          spriteURI2x = null // @Legacy
-      }
       return {
         type: "sticker",
-        ID: ID,
-        url: url,
+        ID: blob.id,
+        url: blob.url,
 
-        packID: packID,
-        spriteUrl: spriteUrl,
-        spriteUrl2x: spriteUrl2x,
-        width: width,
-        height: height,
+        packID: blob.pack
+          ? blob.pack.id
+          : null,
+        spriteUrl: blob.sprite_image,
+        spriteUrl2x: blob.sprite_image_2x,
+        width: blob.width,
+        height: blob.height,
 
-        caption: caption,
-        description: description,
+        caption: blob.label,
+        description: blob.label,
 
-        frameCount: frameCount,
-        frameRate: frameRate,
-        framesPerRow: framesPerRow,
-        framesPerCol: framesPerCol,
+        frameCount: blob.frame_count,
+        frameRate: blob.frame_rate,
+        framesPerRow: blob.frames_per_row,
+        framesPerCol: blob.frames_per_column,
 
-        stickerID: stickerID, // @Legacy
-        spriteURI: spriteURI, // @Legacy
-        spriteURI2x: spriteURI2x // @Legacy
+        stickerID: blob.id, // @Legacy
+        spriteURI: blob.sprite_image, // @Legacy
+        spriteURI2x: blob.sprite_image_2x // @Legacy
       };
     case "MessageLocation":
       var urlAttach = blob.story_attachment.url;
@@ -623,88 +581,51 @@ function _formatAttachment(attachment1, attachment2) {
         styleList: blob.story_attachment.style_list // @Legacy
       };
     case "ExtensibleAttachment":
-    try {
-      var url = blob.story_attachment.url,
-          title = blob.story_attachment.title_with_entities.text,
-          description = 
-            blob.story_attachment.description &&
-            blob.story_attachment.description.text,
-          source = blob.story_attachment.source
+      return {
+        type: "share",
+        ID: blob.legacy_attachment_id,
+        url: blob.story_attachment.url,
+
+        title: blob.story_attachment.title_with_entities.text,
+        description:
+          blob.story_attachment.description &&
+          blob.story_attachment.description.text,
+        source: blob.story_attachment.source
           ? blob.story_attachment.source.text
           : null,
 
-        image =
+        image:
           blob.story_attachment.media &&
           blob.story_attachment.media.image &&
           blob.story_attachment.media.image.uri,
-        width =
+        width:
           blob.story_attachment.media &&
           blob.story_attachment.media.image &&
           blob.story_attachment.media.image.width,
-        height =
+        height:
           blob.story_attachment.media &&
           blob.story_attachment.media.image &&
           blob.story_attachment.media.image.height,
-        playable =
+        playable:
           blob.story_attachment.media &&
           blob.story_attachment.media.is_playable,
-        duration =
+        duration:
           blob.story_attachment.media &&
           blob.story_attachment.media.playable_duration_in_ms,
-        playableUrl =
+        playableUrl:
           blob.story_attachment.media == null
             ? null
             : blob.story_attachment.media.playable_url,
 
-        subattachments = blob.story_attachment.subattachments,
-        properties = blob.story_attachment.properties.reduce(function (obj, cur) {
+        subattachments: blob.story_attachment.subattachments,
+        properties: blob.story_attachment.properties.reduce(function (obj, cur) {
           obj[cur.key] = cur.value.text;
           return obj;
         }, {}),
 
-        facebookUrl = blob.story_attachment.url, // @Legacy
-        target = blob.story_attachment.target, // @Legacy
-        styleList = blob.story_attachment.style_list // @Legacy
-    }
-    catch(e) {
-      var url = null,
-          title = null,
-          description = null,
-          source = null,
-          image = null,
-          width = null,
-          height = null,
-          playable = null,
-          duration = null,
-          playableUrl = null,
-          subattachments = null,
-          properties = null,
-          facebookUrl = null,
-          target = null,
-          styleList = null
-    }
-      return {
-        type: "share",
-        ID: blob.legacy_attachment_id,
-        url: url,
-
-        title: title,
-        description: description,
-        source: source,
-
-        image: image,
-        width: width,
-        height: height,
-        playable: playable,
-        duration: duration,
-        playableUrl: playableUrl,
-
-        subattachments: subattachments,
-        properties: subattachments,
-
-        facebookUrl: facebookUrl, // @Legacy
-        target: target, // @Legacy
-        styleList: styleList // @Legacy
+        facebookUrl: blob.story_attachment.url, // @Legacy
+        target: blob.story_attachment.target, // @Legacy
+        styleList: blob.story_attachment.style_list // @Legacy
       };
     case "MessageFile":
       return {
@@ -750,32 +671,38 @@ function formatAttachment(attachments, attachmentIds, attachmentMap, shareMap) {
 }
 
 function formatDeltaMessage(m) {
-    var md = m.delta.messageMetadata;
-    var mdata =
-        m.delta.data === undefined ? [] :
-        m.delta.data.prng === undefined ? [] :
-        JSON.parse(m.delta.data.prng);
-    var m_id = mdata.map(u => u.i);
-    var m_offset = mdata.map(u => u.o);
-    var m_length = mdata.map(u => u.l);
-    var mentions = {};
-    var body = m.delta.body || "";
-    var args = body == "" ? [] : body.trim().split(/\s+/);
-    for (var i = 0; i < m_id.length; i++) mentions[m_id[i]] = m.delta.body.substring(m_offset[i], m_offset[i] + m_length[i]);
+  var md = m.delta.messageMetadata;
 
-    return {
-        type: "message",
-        senderID: formatID(md.actorFbId.toString()),
-        threadID: formatID((md.threadKey.threadFbId || md.threadKey.otherUserFbId).toString()),
-        messageID: md.messageId,
-        args: args,
-        body: body,
-        attachments: (m.delta.attachments || []).map(v => _formatAttachment(v)),
-        mentions: mentions,
-        timestamp: md.timestamp,
-        isGroup: !!md.threadKey.threadFbId,
-        participantIDs: m.delta.participants || []
-    };
+  var mdata =
+    m.delta.data === undefined
+      ? []
+      : m.delta.data.prng === undefined
+        ? []
+        : JSON.parse(m.delta.data.prng);
+  var m_id = mdata.map(u => u.i);
+  var m_offset = mdata.map(u => u.o);
+  var m_length = mdata.map(u => u.l);
+  var mentions = {};
+  for (var i = 0; i < m_id.length; i++) {
+    mentions[m_id[i]] = m.delta.body.substring(
+      m_offset[i],
+      m_offset[i] + m_length[i]
+    );
+  }
+
+  return {
+    type: "message",
+    senderID: formatID(md.actorFbId.toString()),
+    body: m.delta.body || "",
+    threadID: formatID(
+      (md.threadKey.threadFbId || md.threadKey.otherUserFbId).toString()
+    ),
+    messageID: md.messageId,
+    attachments: (m.delta.attachments || []).map(v => _formatAttachment(v)),
+    mentions: mentions,
+    timestamp: md.timestamp,
+    isGroup: !!md.threadKey.threadFbId
+  };
 }
 
 function formatID(id) {
@@ -869,28 +796,11 @@ function formatHistoryMessage(m) {
 function getAdminTextMessageType(type) {
   switch (type) {
     case "change_thread_theme":
-        return "log:thread-color";
-    case "change_thread_icon":
-        return "log:thread-icon";
+      return "log:thread-color";
     case "change_thread_nickname":
-        return "log:user-nickname";
-    case "change_thread_admins":
-        return "log:thread-admins";
-    case "group_poll":
-    case "update_vote":
-        return "log:thread-poll";
-    case "change_thread_approval_mode":
-        return "log:thread-approval-mode";
-    case "magic_words":
-        return "log:thread-words"
-    case "instant_game_update":
-        return "log:thread-instant_game"
-    case "joinable_group_link_mode_change":
-        return "log:thread-link";
-    case "messenger_call_log":
-    case "rtc_call_log":
-    case "participant_joined_group_call":
-        return "log:thread-call";
+      return "log:user-nickname";
+    case "change_thread_icon":
+      return "log:thread-icon";
     default:
       return type;
   }
@@ -928,16 +838,12 @@ function formatDeltaEvent(m) {
 
   return {
     type: "event",
-    threadID: formatID(
-      (
-        m.messageMetadata.threadKey.threadFbId ||
-        m.messageMetadata.threadKey.otherUserFbId
-      ).toString()
-    ),
+    threadID: formatID((m.messageMetadata.threadKey.threadFbId || m.messageMetadata.threadKey.otherUserFbId).toString()),
     logMessageType: logMessageType,
     logMessageData: logMessageData,
     logMessageBody: m.messageMetadata.adminText,
-    author: m.messageMetadata.actorFbId
+    author: m.messageMetadata.actorFbId,
+    participantIDs: m.participants || []
   };
 }
 

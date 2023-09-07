@@ -21,7 +21,7 @@ var GENDERS = {
 };
 
 function formatData(obj) {
-  return Object.keys(obj).map(function (key) {
+  return Object.keys(obj).map(function(key) {
     var user = obj[key];
     return {
       alternateName: user.alternateName,
@@ -39,10 +39,10 @@ function formatData(obj) {
   });
 }
 
-module.exports = function (defaultFuncs, api, ctx) {
+module.exports = function(defaultFuncs, api, ctx) {
   return function getFriendsList(callback) {
-    var resolveFunc = function () { };
-    var rejectFunc = function () { };
+    var resolveFunc = function(){};
+    var rejectFunc = function(){};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -50,20 +50,31 @@ module.exports = function (defaultFuncs, api, ctx) {
 
     if (!callback) {
       callback = function (err, friendList) {
-        if (err) return rejectFunc(err);
+        if (err) {
+          return rejectFunc(err);
+        }
         resolveFunc(friendList);
       };
     }
 
     defaultFuncs
-      .postFormData("https://www.facebook.com/chat/user_info_all", ctx.jar, {}, { viewer: ctx.userID })
+      .postFormData(
+        "https://www.facebook.com/chat/user_info_all",
+        ctx.jar,
+        {},
+        { viewer: ctx.userID }
+      )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function (resData) {
-        if (!resData) throw { error: "getFriendsList returned empty object." };
-        if (resData.error) throw resData;
+      .then(function(resData) {
+        if (!resData) {
+          throw { error: "getFriendsList returned empty object." };
+        }
+        if (resData.error) {
+          throw resData;
+        }
         callback(null, formatData(resData.payload));
       })
-      .catch(function (err) {
+      .catch(function(err) {
         log.error("getFriendsList", err);
         return callback(err);
       });

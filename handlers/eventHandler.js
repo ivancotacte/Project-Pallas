@@ -40,8 +40,7 @@ module.exports = async ({ api, event }) => {
             });
           });
       });
-    }
-    if (event.logMessageType == "log:unsubscribe") {
+    } else if (event.logMessageType == "log:unsubscribe") {
       let userInfo = await api.getUserInfo(
         event.logMessageData.leftParticipantFbId,
       );

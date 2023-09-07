@@ -3,19 +3,21 @@
 var utils = require("../utils");
 var log = require("npmlog");
 
-module.exports = function (defaultFuncs, api, ctx) {
-  return function postReaction(postID, type, callback) {
-    var resolveFunc = function () { };
-    var rejectFunc = function () { };
+module.exports = function(defaultFuncs, api, ctx) {
+  return function unsendMessage(postID, type, callback) {
+    var resolveFunc = function(){};
+    var rejectFunc = function(){};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
     });
 
     if (!callback) {
-      callback = function (err, data) {
-        if (err) return rejectFunc(err);
-        resolveFunc(data);
+      callback = function (err, friendList) {
+        if (err) {
+          return rejectFunc(err);
+        }
+        resolveFunc(friendList);
       };
     }
 
@@ -29,7 +31,9 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
     if (typeof type != "number") {
       type = map[type.toLocaleLowerCase()];
-      if (!type) type = 1;
+      if (!type) {
+        type = 1;
+      }
     }
     var form = {
       av: ctx.userID,
@@ -41,20 +45,28 @@ module.exports = function (defaultFuncs, api, ctx) {
         input: {
           client_mutation_id: "7",
           actor_id: ctx.userID,
-          feedback_reaction: type
+          feedback_reaction: type,
+          
         },
         useDefaultActor: true
       })
     };
 
     defaultFuncs
-      .post("https://www.facebook.com/api/graphql/", ctx.jar, form)
+      .post(
+        "https://www.facebook.com/api/graphql/",
+        ctx.jar,
+        form
+      )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function (resData) {
-        if (resData.error) throw resData;
+      .then(function(resData) {
+        if (resData.error) {
+          throw resData;
+        }
+
         return callback();
       })
-      .catch(function (err) {
+      .catch(function(err) {
         log.error("setPostReaction", err);
         return callback(err);
       });

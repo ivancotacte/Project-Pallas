@@ -19,10 +19,11 @@ module.exports = function (defaultFuncs, api, ctx) {
     });
 
     if (!callback) {
-      callback = function (err, data) {
-        if (err) return rejectFunc(err);
-
-        resolveFunc(data);
+      callback = function (err, friendList) {
+        if (err) {
+          return rejectFunc(err);
+        }
+        resolveFunc(friendList);
       };
     }
 
@@ -31,18 +32,25 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     defaultFuncs
-      .post("https://www.facebook.com/ajax/mercury/mark_seen.php", ctx.jar, form)
+      .post(
+        "https://www.facebook.com/ajax/mercury/mark_seen.php",
+        ctx.jar,
+        form
+      )
       .then(utils.saveCookies(ctx.jar))
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
-        if (resData.error) throw resData;
+        if (resData.error) {
+          throw resData;
+        }
 
         return callback();
       })
       .catch(function (err) {
         log.error("markAsSeen", err);
-        if (utils.getType(err) == "Object" && err.error === "Not logged in.") ctx.loggedIn = false;
-
+        if (utils.getType(err) == "Object" && err.error === "Not logged in.") {
+          ctx.loggedIn = false;
+        }
         return callback(err);
       });
 

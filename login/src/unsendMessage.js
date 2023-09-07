@@ -3,10 +3,10 @@
 var utils = require("../utils");
 var log = require("npmlog");
 
-module.exports = function (defaultFuncs, api, ctx) {
+module.exports = function(defaultFuncs, api, ctx) {
   return function unsendMessage(messageID, callback) {
-    var resolveFunc = function () { };
-    var rejectFunc = function () { };
+    var resolveFunc = function(){};
+    var rejectFunc = function(){};
     var returnPromise = new Promise(function (resolve, reject) {
       resolveFunc = resolve;
       rejectFunc = reject;
@@ -14,7 +14,9 @@ module.exports = function (defaultFuncs, api, ctx) {
 
     if (!callback) {
       callback = function (err, friendList) {
-        if (err) return rejectFunc(err);
+        if (err) {
+          return rejectFunc(err);
+        }
         resolveFunc(friendList);
       };
     }
@@ -24,13 +26,20 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     defaultFuncs
-      .post("https://www.facebook.com/messaging/unsend_message/", ctx.jar, form)
+      .post(
+        "https://www.facebook.com/messaging/unsend_message/",
+        ctx.jar,
+        form
+      )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function (resData) {
-        if (resData.error) throw resData;
+      .then(function(resData) {
+        if (resData.error) {
+          throw resData;
+        }
+
         return callback();
       })
-      .catch(function (err) {
+      .catch(function(err) {
         log.error("unsendMessage", err);
         return callback(err);
       });

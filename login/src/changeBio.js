@@ -13,16 +13,22 @@ module.exports = function (defaultFuncs, api, ctx) {
     });
 
     if (!callback) {
-      if (utils.getType(publish) == "Function" || utils.getType(publish) == "AsyncFunction") callback = publish;
-      else {
+      if (utils.getType(publish) == "Function" || utils.getType(publish) == "AsyncFunction") {
+        callback = publish;
+      } else {
         callback = function (err) {
-          if (err) return rejectFunc(err);
+          if (err) {
+            return rejectFunc(err);
+          }
           resolveFunc();
         };
       }
     }
 
-    if (utils.getType(publish) != "Boolean") publish = false;
+    if (utils.getType(publish) != "Boolean") {
+      publish = false;
+    }
+
     if (utils.getType(bio) != "String") {
       bio = "";
       publish = false;
@@ -48,10 +54,16 @@ module.exports = function (defaultFuncs, api, ctx) {
     };
 
     defaultFuncs
-      .post("https://www.facebook.com/api/graphql/", ctx.jar, form)
+      .post(
+        "https://www.facebook.com/api/graphql/",
+        ctx.jar,
+        form
+      )
       .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
       .then(function (resData) {
-        if (resData.errors) throw resData;
+        if (resData.errors) {
+          throw resData;
+        }
 
         return callback();
       })

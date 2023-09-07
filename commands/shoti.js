@@ -16,7 +16,7 @@ module.exports.runFunction = async ({ api, event }) => {
           attachment: fs.createReadStream(__dirname + "/../cache/shoti.mp4"),
         },
         event.threadID,
-        event.messageID
+        event.messageID,
       );
     });
   } catch (error) {

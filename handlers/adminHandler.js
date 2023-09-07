@@ -1,13 +1,34 @@
 const os = require("os");
+const moment = require("moment-timezone");
 
-const config = require("../config");
-const { admins, banned } = config;
 
-module.exports = async ({ api, event }) => {
+module.exports = async ({ api, event, userInfo, config }) => {
+  const { admins, banned } = config;
   let input = event.body.toLowerCase();
   let data = input.split(" ");
   try {
-    if (input.startsWith("!shell")) {
+    if (input.startsWith("!stats")) {
+      const currentTime = moment()
+        .tz("Asia/Manila")
+        .format("YYYY-MM-DD hh:mm:ss A");
+
+      const threads = await api.getThreadList(99999, null, ["INBOX"]);
+
+      let userCount = 0;
+      let groupCount = 0;
+
+      threads.forEach((thread) => {
+        if (thread.isGroup) {
+          groupCount++;
+        } else {
+          userCount++;
+        }
+      });
+
+      const output = `Hello ${userInfo.name}, here is the current server snapshot as of ${currentTime}.\n\n- Users: ${userCount}\n- Groups: ${groupCount}`;
+
+      api.sendMessage(output, event.threadID, event.messageID);
+    } else if (input.startsWith("!shell")) {
       if (admins.includes(event.senderID)) {
         let data = event.body.split(" ");
         const { exec } = require("child_process");
@@ -21,7 +42,7 @@ module.exports = async ({ api, event }) => {
               api.sendMessage(
                 `Error: \n${error.message}`,
                 event.threadID,
-                event.messageID,
+                event.messageID
               );
               return;
             }
@@ -29,7 +50,7 @@ module.exports = async ({ api, event }) => {
               api.sendMessage(
                 `Stderr:\n ${stderr}\n${stdout}`,
                 event.threadID,
-                event.messageID,
+                event.messageID
               );
               return;
             }
@@ -40,13 +61,19 @@ module.exports = async ({ api, event }) => {
         api.sendMessage(
           "Sorry, but you do not have the necessary permission to use this command.",
           event.threadID,
-          event.messageID,
+          event.messageID
         );
       }
     } else if (input.startsWith("!sysinfo")) {
       if (admins.includes(event.senderID)) {
-        const userInfo = await api.getUserInfo(event.senderID);
-        const fullname = userInfo[event.senderID].name;
+        const currentTime = moment()
+          .tz("Asia/Manila")
+          .format("YYYY-MM-DD hh:mm:ss A");
+        const uptime = process.uptime();
+        const hours = Math.floor(uptime / 3600);
+        const minutes = Math.floor((uptime - hours * 3600) / 60);
+        const seconds = Math.floor(uptime % 60);
+        const uptimeStr = `${hours} hours, ${minutes} minutes, and ${seconds} seconds`;
         let cpu = os.loadavg();
         let ut = os.uptime();
         let sec = ut;
@@ -64,22 +91,24 @@ module.exports = async ({ api, event }) => {
         let crashStatus = "No crashes detected";
         api.sendMessage(
           {
-            body: `Hello, ${fullname} account is login for about ${hr} hours, ${min} minutes, and ${sec} seconds.\n\n• CPU Usage: ${averageLoad.toFixed(
-              2,
+            body: `Hello ${
+              userInfo.name
+            }, here is the current system information as of ${currentTime}. Your account has been logged in for approximately ${uptimeStr}.\n\n• CPU Usage: ${averageLoad.toFixed(
+              2
             )}\n• CPU-0: ${Math.trunc(cpu[0])}%\n• CPU-1: ${Math.trunc(
-              cpu[1],
+              cpu[1]
             )}%\n• CPU-2: ${Math.trunc(cpu[2])}%\n• CPU-3: ${Math.trunc(
-              cpu[3],
+              cpu[3]
             )}%\n\n• OS: ${os.arch()} ${os.type()}\n• OS Version: ${os.version()}\n• RAM: ${totalMemoryGB}GB/4GB\n• ROM: ${freeMemoryGB}GB/50GB\n• Crash: ${crashStatus}`,
           },
           event.threadID,
-          event.messageID,
+          event.messageID
         );
       } else {
         api.sendMessage(
           "Sorry, but you do not have the necessary permission to use this command.",
           event.threadID,
-          event.messageID,
+          event.messageID
         );
       }
     } else if (input.startsWith("!clearcache")) {
@@ -92,7 +121,7 @@ module.exports = async ({ api, event }) => {
             api.sendMessage(
               "Error reading directory.",
               event.threadID,
-              event.messageID,
+              event.messageID
             );
           } else {
             const fileCount = files.length;
@@ -104,7 +133,7 @@ module.exports = async ({ api, event }) => {
               api.sendMessage(
                 "No files to delete.",
                 event.threadID,
-                event.messageID,
+                event.messageID
               );
             } else {
               files.forEach((file) => {
@@ -128,7 +157,7 @@ module.exports = async ({ api, event }) => {
                         console.log(
                           "Total size of deleted files:",
                           totalSize,
-                          "bytes",
+                          "bytes"
                         );
                         console.log("Deleted files:", deletedFiles);
                         const threadID = event.threadID;
@@ -152,7 +181,7 @@ module.exports = async ({ api, event }) => {
         api.sendMessage(
           "Sorry, but you do not have the necessary permission to use this command.",
           event.threadID,
-          event.messageID,
+          event.messageID
         );
       }
     }

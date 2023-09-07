@@ -34,7 +34,6 @@ login({ appState: credentials, proxy: proxy, local: local }, (err, api) => {
     listenEvents: true,
     autoMarkDelivery: false,
     selfListen: true,
-    online: true,
   });
 
   api.listenMqtt(async (err, event) => {
@@ -44,7 +43,7 @@ login({ appState: credentials, proxy: proxy, local: local }, (err, api) => {
     userInfo = userInfo[event.senderID];
 
     if (event.type == "message") {
-      require("./handlers/adminHandler")({ api, event });
+      require("./handlers/adminHandler")({ api, event, userInfo, config });
       require("./handlers/message")({
         api,
         event,

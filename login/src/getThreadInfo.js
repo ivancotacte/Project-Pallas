@@ -21,7 +21,7 @@ function formatEventReminders(reminder) {
     secondsToNotifyBefore: reminder.seconds_to_notify_before,
     allowsRsvp: reminder.allows_rsvp,
     relatedEvent: reminder.related_event,
-    members: reminder.event_reminder_members.edges.map(function (member) {
+    members: reminder.event_reminder_members.edges.map(function(member) {
       return {
         memberID: member.node.id,
         state: member.guest_list_state.toLowerCase()
@@ -31,15 +31,33 @@ function formatEventReminders(reminder) {
 }
 
 function formatThreadGraphQLResponse(data) {
-  var messageThread = data.o0.data.message_thread;
-  var threadID = messageThread.thread_key.thread_fbid ? messageThread.thread_key.thread_fbid : messageThread.thread_key.other_user_id;
+  try{
+    var messageThread = data.o0.data.message_thread;
+  } catch (err){
+    console.error("GetThreadInfoGraphQL", "Can't get this thread info!");
+    return {err: err};
+  }
+  var threadID = messageThread.thread_key.thread_fbid
+    ? messageThread.thread_key.thread_fbid
+    : messageThread.thread_key.other_user_id;
 
   // Remove me
   var lastM = messageThread.last_message;
-  var snippetID = lastM && lastM.nodes && lastM.nodes[0] && lastM.nodes[0].message_sender && lastM.nodes[0].message_sender.messaging_actor ? lastM.nodes[0].message_sender.messaging_actor.id : null;
-  var snippetText = lastM && lastM.nodes && lastM.nodes[0] ? lastM.nodes[0].snippet : null;
+  var snippetID =
+    lastM &&
+    lastM.nodes &&
+    lastM.nodes[0] &&
+    lastM.nodes[0].message_sender &&
+    lastM.nodes[0].message_sender.messaging_actor
+      ? lastM.nodes[0].message_sender.messaging_actor.id
+      : null;
+  var snippetText =
+    lastM && lastM.nodes && lastM.nodes[0] ? lastM.nodes[0].snippet : null;
   var lastR = messageThread.last_read_receipt;
-  var lastReadTimestamp = lastR && lastR.nodes && lastR.nodes[0] && lastR.nodes[0].timestamp_precise ? lastR.nodes[0].timestamp_precise : null;
+  var lastReadTimestamp =
+    lastR && lastR.nodes && lastR.nodes[0] && lastR.nodes[0].timestamp_precise
+      ? lastR.nodes[0].timestamp_precise
+      : null;
 
   return {
     threadID: threadID,
@@ -66,16 +84,27 @@ function formatThreadGraphQLResponse(data) {
     isArchived: messageThread.has_viewer_archived,
     folder: messageThread.folder,
     cannotReplyReason: messageThread.cannot_reply_reason,
-    eventReminders: messageThread.event_reminders ? messageThread.event_reminders.nodes.map(formatEventReminders) : null,
-    emoji: messageThread.customization_info ? messageThread.customization_info.emoji : null,
-    color: messageThread.customization_info && messageThread.customization_info.outgoing_bubble_color ? messageThread.customization_info.outgoing_bubble_color.slice(2) : null,
+    eventReminders: messageThread.event_reminders
+      ? messageThread.event_reminders.nodes.map(formatEventReminders)
+      : null,
+    emoji: messageThread.customization_info
+      ? messageThread.customization_info.emoji
+      : null,
+    color:
+      messageThread.customization_info &&
+      messageThread.customization_info.outgoing_bubble_color
+        ? messageThread.customization_info.outgoing_bubble_color.slice(2)
+        : null,
     nicknames:
       messageThread.customization_info &&
-        messageThread.customization_info.participant_customizations
-        ? messageThread.customization_info.participant_customizations.reduce(function (res, val) {
-          if (val.nickname) res[val.participant_id] = val.nickname;
-          return res;
-        }, {})
+      messageThread.customization_info.participant_customizations
+        ? messageThread.customization_info.participant_customizations.reduce(
+            function(res, val) {
+              if (val.nickname) res[val.participant_id] = val.nickname;
+              return res;
+            },
+            {}
+          )
         : {},
     adminIDs: messageThread.thread_admins,
     approvalMode: Boolean(messageThread.approval_mode),
@@ -105,89 +134,73 @@ function formatThreadGraphQLResponse(data) {
     hasEmailParticipant: false,
     readOnly: false,
     canReply: messageThread.cannot_reply_reason == null,
-    lastMessageTimestamp: messageThread.last_message ? messageThread.last_message.timestamp_precise : null,
+    lastMessageTimestamp: messageThread.last_message
+      ? messageThread.last_message.timestamp_precise
+      : null,
     lastMessageType: "message",
     lastReadTimestamp: lastReadTimestamp,
     threadType: messageThread.thread_type == "GROUP" ? 2 : 1
   };
 }
 
-module.exports = function (defaultFuncs, api, ctx) {
+module.exports = function(defaultFuncs, api, ctx) {
   return function getThreadInfoGraphQL(threadID, callback) {
-    var path = require("path");
-    const { writeFileSync } = require('fs-extra');
-    var threadData = require('./data/getThreadInfo.json');
+    var resolveFunc = function(){};
+    var rejectFunc = function(){};
+    var returnPromise = new Promise(function (resolve, reject) {
+      resolveFunc = resolve;
+      rejectFunc = reject;
+    });
 
-    var threadJson = path.resolve(__dirname, 'data', 'getThreadInfo.json');
-    if(threadData.some(i => i.data.threadID == threadID)) {
-      var thread = threadData.find(i => i.data.threadID == threadID);
-      if(((Date.now() - thread.time)/1000).toFixed() >= 60 * 60 * 2) {
-        const index = threadData.findIndex(i => i.data.threadID == threadID);
-        threadData.splice(index, 1);
-        setTimeout(function() {
-          writeFileSync(threadJson, JSON.stringify(threadData, null, 4));
-        }, 2000);
-      }
-      return thread.data
+    if (utils.getType(callback) != "Function" && utils.getType(callback) != "AsyncFunction") {
+      callback = function (err, data) {
+        if (err) {
+          return rejectFunc(err);
+        }
+        resolveFunc(data);
+      };
     }
-    else {
-      var resolveFunc = function () { };
-      var rejectFunc = function () { };
-      var returnPromise = new Promise(function (resolve, reject) {
-        resolveFunc = resolve;
-        rejectFunc = reject;
+
+    // `queries` has to be a string. I couldn't tell from the dev console. This
+    // took me a really long time to figure out. I deserve a cookie for this.
+    var form = {
+      queries: JSON.stringify({
+        o0: {
+          // This doc_id is valid as of July 20th, 2020
+          doc_id: "3449967031715030",
+          query_params: {
+            id: threadID,
+            message_limit: 0,
+            load_messages: false,
+            load_read_receipts: false,
+            before: null
+          }
+        }
+      }),
+      batch_name: "MessengerGraphQLThreadFetcher"
+    };
+
+    defaultFuncs
+      .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
+      .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
+      .then(function(resData) {
+        if (resData.error) {
+          throw resData;
+        }
+        // This returns us an array of things. The last one is the success /
+        // failure one.
+        // @TODO What do we do in this case?
+        if (resData[resData.length - 1].error_results !== 0) {
+          console.error("GetThreadInfo", "Well darn there was an error_result");
+        }
+
+        callback(null, formatThreadGraphQLResponse(resData[0]));
+      })
+      .catch(function(err) {
+        log.error("getThreadInfoGraphQL", err);
+        return callback(err);
       });
 
-      if (utils.getType(callback) != "Function" && utils.getType(callback) != "AsyncFunction") {
-        callback = function (err, data) {
-          if (err) return rejectFunc(err);
-          resolveFunc(data);
-        };
-      }
-
-      // `queries` has to be a string. I couldn't tell from the dev console. This
-      // took me a really long time to figure out. I deserve a cookie for this.
-      var form = {
-        queries: JSON.stringify({
-          o0: {
-            // This doc_id is valid as of July 20th, 2020
-            doc_id: "3449967031715030",
-            query_params: {
-              id: threadID,
-              message_limit: 0,
-              load_messages: false,
-              load_read_receipts: false,
-              before: null
-            }
-          }
-        }),
-        batch_name: "MessengerGraphQLThreadFetcher"
-      };
-
-      defaultFuncs
-        .post("https://www.facebook.com/api/graphqlbatch/", ctx.jar, form)
-        .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-        .then(function (resData) {
-          if (resData.error) throw resData;
-          // This returns us an array of things. The last one is the success /
-          // failure one.
-          // @TODO What do we do in this case?
-          if (resData[resData.length - 1].error_results !== 0) {
-            console.log(resData); //Log more info
-            throw new Error("well darn there was an error_result");
-          }
-          threadData.push({
-            data: formatThreadGraphQLResponse(resData[0]),
-            time: Date.now()
-          })
-          writeFileSync(threadJson, JSON.stringify(threadData, null, 4));
-          callback(null, formatThreadGraphQLResponse(resData[0]));
-        })
-        .catch(function (err) {
-          log.error("getThreadInfoGraphQL", err);
-          return callback(err);
-        });
-      return returnPromise;
-    };
-  }
+    return returnPromise;
+  };
 };

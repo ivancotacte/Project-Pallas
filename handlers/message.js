@@ -13,17 +13,20 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
       return api.sendMessage(
         "You're banned from using commands on this bot!",
         event.threadID,
-        event.messageID
+        event.messageID,
       );
     }
     try {
       if (cmd[0].length == 0) {
+        const welcome = [`Wassup,`, `Hello,`, "Supp,", "Wazzup,"];
+        const randomIndex = Math.floor(Math.random() * welcome.length);
+        const welcomeMessage = welcome[randomIndex];
         return api.sendMessage(
           {
-            body: "Yess " + userInfo.firstName + "?, that's my prefix.",
+            body: welcomeMessage + " " + userInfo.name + ", that's my prefix.",
           },
           event.threadID,
-          event.messageID
+          event.messageID,
         );
       } else {
         let runIt = require(`../commands/${cmd[0]}`);
@@ -39,9 +42,9 @@ module.exports = async ({ api, event, config, userInfo, globalData }) => {
     } catch (err) {
       if (err.code == "MODULE_NOT_FOUND") {
         api.sendMessage(
-          `Command '${cmd[0]}' isn't found on command list.`,
+          `'${cmd[0]}' command is not found on the command list.`,
           event.threadID,
-          event.messageID
+          event.messageID,
         );
       } else {
         console.log(err);
